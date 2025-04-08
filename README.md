@@ -28,7 +28,7 @@ default-browser google_chrome
 
 ## Related
 
-[kerma/defaultbrowser](https://github.com/kerma/defaultbrowser)
-[jwbargsten/defbro](https://github.com/jwbargsten/defbro)
+- [kerma/defaultbrowser](https://github.com/kerma/defaultbrowser)
+- [jwbargsten/defbro](https://github.com/jwbargsten/defbro)
 
 This cli uses thhe [`NSWorkspace`](https://developer.apple.com/documentation/appkit/nsworkspace) APIs rather than the deprecated [Launch Services APIs](https://developer.apple.com/documentation/coreservices/launch_services).

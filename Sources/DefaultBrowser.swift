@@ -16,7 +16,7 @@ struct DefaultBrowser: AsyncParsableCommand {
     
     mutating func run() async throws {
         let httpUrl = URL(string: "http://www.apple.com")!
-        let browsers = getBrowsers(forUrl: httpUrl)
+        let browsers = NSWorkspace.shared.urlsForApplications(toOpen: httpUrl)
         
         if browser == nil {
             printBrowsers(forUrl: httpUrl, browsers:browsers)
@@ -24,10 +24,29 @@ struct DefaultBrowser: AsyncParsableCommand {
         }
         
         if let browserUrl = browsers.first(where: {formatBrowserName(browser: $0) == browser}) {
-            do {
-                try await setDefaultBrowser(browser: browserUrl)
-            } catch {
-                DefaultBrowser.exit(withError: error)
+            NSWorkspace.shared.setDefaultApplication(at: browserUrl, toOpenURLsWithScheme: "http"){ error in
+                if let error = error {
+                    DefaultBrowser.exit(withError: error)
+                } else {
+                    DefaultBrowser.exit()
+                }
+            }
+            
+            
+            if let scriptObject = NSAppleScript(source: """
+try
+tell application "System Events"
+tell application process "CoreServicesUIAgent"
+tell window 1
+  tell (first button whose name starts with "use")
+    perform action "AXPress"
+  end tell
+end tell
+end tell
+end tell
+end try
+""") {
+                scriptObject.executeAndReturnError(nil)
             }
         } else {
             print("Invalid browser, use one of these")
@@ -49,14 +68,5 @@ struct DefaultBrowser: AsyncParsableCommand {
                 print(formatBrowserName(browser: browser))
             }
         }
-    }
-    
-    func getBrowsers(forUrl: URL) -> [URL] {
-        return NSWorkspace.shared.urlsForApplications(toOpen: forUrl)
-        
-    }
-    
-    func setDefaultBrowser(browser: URL) async throws {
-        return try await NSWorkspace.shared.setDefaultApplication(at: browser, toOpenURLsWithScheme: "http")
     }
 }
